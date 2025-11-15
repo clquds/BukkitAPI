@@ -352,7 +352,7 @@ public final class LunarClientAPI extends JavaPlugin implements Listener {
         message.addProperty("prevent_removal", waypoint.isForced());
         message.addProperty("hidden", !waypoint.isVisible());
 
-        Bukkit.getScheduler().runTask(this, () -> JsonPacketUtil.sendPacket(player, message));
+        JsonPacketUtil.sendPacket(player, message);
         //sendPacket(player, new LCPacketWaypointAdd(waypoint.getName(), waypoint.getWorld(), waypoint.getColor(), waypoint.getX(), waypoint.getY(), waypoint.getZ(), waypoint.isForced(), waypoint.isVisible()));
     }
 
