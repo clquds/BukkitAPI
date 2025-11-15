@@ -4,12 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.lunarclient.bukkitapi.apollo.JsonPacketUtil;
+import com.lunarclient.bukkitapi.apollo.JsonUtil;
 import com.lunarclient.bukkitapi.event.*;
 import com.lunarclient.bukkitapi.listener.LunarClientLoginListener;
 import com.lunarclient.bukkitapi.nethandler.LCPacket;
 import com.lunarclient.bukkitapi.nethandler.client.*;
-import com.lunarclient.bukkitapi.nethandler.server.LCNetHandlerServer;
-import com.lunarclient.bukkitapi.nethandler.shared.LCPacketWaypointAdd;
+import com.lunarclient.bukkitapi.nethandler.server.LCNetHandlerServer;;
 import com.lunarclient.bukkitapi.nethandler.shared.LCPacketWaypointRemove;
 import com.lunarclient.bukkitapi.object.*;
 import com.lunarclient.bukkitapi.object.LCWaypoint;
@@ -23,7 +23,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.util.Vector;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -340,7 +342,18 @@ public final class LunarClientAPI extends JavaPlugin implements Listener {
      * @param waypoint A new waypoint object to send to the player.
      */
     public void sendWaypoint(Player player, LCWaypoint waypoint) {
-        sendPacket(player, new LCPacketWaypointAdd(waypoint.getName(), waypoint.getWorld(), waypoint.getColor(), waypoint.getX(), waypoint.getY(), waypoint.getZ(), waypoint.isForced(), waypoint.isVisible()));
+        JsonObject message = new JsonObject();
+        message.addProperty("@type", "type.googleapis.com/lunarclient.apollo.waypoint.v1.DisplayWaypointMessage");
+        message.addProperty("name", waypoint.getName());
+        message.add("location", JsonUtil.createBlockLocationObject(
+                waypoint.getWorld(), waypoint.getX(), waypoint.getY(), waypoint.getZ()
+        ));
+        message.add("color", JsonUtil.createColorObject(new Color(waypoint.getColor())));
+        message.addProperty("prevent_removal", waypoint.isForced());
+        message.addProperty("hidden", !waypoint.isVisible());
+
+        Bukkit.getScheduler().runTask(this, () -> JsonPacketUtil.sendPacket(player, message));
+        //sendPacket(player, new LCPacketWaypointAdd(waypoint.getName(), waypoint.getWorld(), waypoint.getColor(), waypoint.getX(), waypoint.getY(), waypoint.getZ(), waypoint.isForced(), waypoint.isVisible()));
     }
 
     /**
