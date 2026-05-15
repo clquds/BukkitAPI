@@ -167,7 +167,22 @@ public final class LunarClientAPI extends JavaPlugin implements Listener {
      * @param state The new state of the StaffModule.
      */
     public void setStaffModuleState(Player player, StaffModule module, boolean state) {
-        sendPacket(player, new LCPacketStaffModState(module.name(), state));
+        //sendPacket(player, new LCPacketStaffModState(module.name(), state));
+
+        String value = state
+                ? "type.googleapis.com/lunarclient.apollo.staffmod.v1.EnableStaffModsMessage"
+                : "type.googleapis.com/lunarclient.apollo.staffmod.v1.DisableStaffModsMessage";
+
+        // only need to check for xray (1) since it's the only one.
+        JsonArray staffMods = Stream.of(1)
+                .map(JsonPrimitive::new)
+                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+
+        JsonObject message = new JsonObject();
+        message.addProperty("@type", value);
+        message.add("staff_mods", staffMods);
+
+        JsonPacketUtil.sendPacket(player, message);
     }
 
     /**
@@ -177,18 +192,9 @@ public final class LunarClientAPI extends JavaPlugin implements Listener {
      * @param player The player to receive the enabled staff modules.
      */
     public void giveAllStaffModules(Player player) {
-        JsonArray staffMods = Stream.of(1)
-                .map(JsonPrimitive::new)
-                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
-
-        JsonObject message = new JsonObject();
-        message.addProperty("@type", "type.googleapis.com/lunarclient.apollo.staffmod.v1.EnableStaffModsMessage");
-        message.add("staff_mods", staffMods);
-
-        JsonPacketUtil.sendPacket(player, message);
-//        for (StaffModule module : StaffModule.values()) {
-//            setStaffModuleState(player, module, true);
-//        }
+        for (StaffModule module : StaffModule.values()) {
+            setStaffModuleState(player, module, true);
+        }
     }
 
     /**
@@ -198,18 +204,9 @@ public final class LunarClientAPI extends JavaPlugin implements Listener {
      * @param player The player receiving the new staff module state.
      */
     public void disableAllStaffModules(Player player) {
-        JsonArray staffMods = Stream.of(1)
-                .map(JsonPrimitive::new)
-                .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
-
-        JsonObject message = new JsonObject();
-        message.addProperty("@type", "type.googleapis.com/lunarclient.apollo.staffmod.v1.DisableStaffModsMessage");
-        message.add("staff_mods", staffMods);
-
-        JsonPacketUtil.sendPacket(player, message);
-//        for (StaffModule module : StaffModule.values()) {
-//            setStaffModuleState(player, module, false);
-//        }
+        for (StaffModule module : StaffModule.values()) {
+            setStaffModuleState(player, module, false);
+        }
     }
 
     /**
